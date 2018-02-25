@@ -1,8 +1,8 @@
-import assert from 'assert';
-import num from 'num';
-import gdax from 'gdax';
+import assert from "assert";
+import num from "num";
+import gdax from "gdax";
 
-import { FIAT_CURRENCIES } from '../helpers';
+import { FIAT_CURRENCIES } from "../helpers";
 
 function callAsync(client, method, ...args) {
   return new Promise((resolve, reject) => {
@@ -26,15 +26,15 @@ async function importOrders(client) {
   let processedOrders = [];
   let pagination = null;
   while (pagination === null || pagination.after) {
-    const orders = await callAsync(client, 'getOrders', {
+    const orders = await callAsync(client, "getOrders", {
       ...pagination,
-      status: 'done',
+      status: "done"
     });
-    pagination = { after: orders.headers['cb-after'] };
+    pagination = { after: orders.headers["cb-after"] };
 
     for (const order of orders.body) {
-      if (order.done_reason !== 'filled') continue;
-      process.stdout.write('.');
+      if (order.done_reason !== "filled") continue;
+      process.stdout.write(".");
       // console.log(
       //   order.id,
       //   order.product_id,
@@ -42,8 +42,23 @@ async function importOrders(client) {
       //   order.price,
       //   order.size
       // );
-      // console.log(order);
-      console.log(order.id, order.product_id);
+      console.log(order);
+      // console.log(order.id, order.product_id);
+
+      const [baseCurrency, quoteCurrency] = order.product_id.split("-");
+
+      // Fees
+      const feeCurrency = quoteCurrency; // Fees are in quote currency
+      const fee = num(order.fill_fees);
+
+      let action;
+      if (order.side === "buy") {
+        action = "BUY";
+      } else if (order.side === "sell") {
+        action = "SELL";
+      } else {
+        throw new Error(`Unknown type: ${order.side}`);
+      }
 
       // // transaction.source = account.source;
       // // transaction.sourceType = t.type;
@@ -68,12 +83,26 @@ async function importOrders(client) {
       //   // quote transaction amount in importFills()
       //   continue;
       // }
+
+      // await Transaction.create({
+      //   date: new Date(order.done_at),
+      //   action,
+      //   amount: Math.abs(tx.amount.amount),
+      //   symbol: CURRENC,
+      //   volume,
+      //   currency,
+      //   exchange: "GDAX",
+      //   exchangeId: order.id,
+      //   fee,
+      //   feeCurrency,
+      //   memo
+      // });
     }
   }
 }
 
 async function importFills(client) {
-  console.log('\nImporting GDAX fills');
+  console.log("\nImporting GDAX fills");
 
   // In-memory storage
   let processedFills = [];
@@ -81,15 +110,15 @@ async function importFills(client) {
   // import fills and match with ledger entries
   let pagination = null;
   while (pagination === null || pagination.after) {
-    const fills = await callAsync(client, 'getFills', pagination);
-    pagination = { after: fills.headers['cb-after'] };
+    const fills = await callAsync(client, "getFills", pagination);
+    pagination = { after: fills.headers["cb-after"] };
 
     for (const f of fills.body) {
-      process.stdout.write('.');
+      process.stdout.write(".");
       const order = f.order_id;
 
       // if we buy BTC, BTC will be positive, and vice versa
-      const baseTotal = f.side === 'buy' ? num(f.size) : num(f.size).neg();
+      const baseTotal = f.side === "buy" ? num(f.size) : num(f.size).neg();
 
       // if we buy BTC, USD will be negative, and vice versa
       const quoteTotalExFee = baseTotal.mul(f.price).neg();
@@ -98,7 +127,7 @@ async function importFills(client) {
       // if we sell BTC, fee will decrease total USD received
       const quoteTotalIncFee = quoteTotalExFee.sub(f.fee);
 
-      const [baseCurrency, quoteCurrency] = f.product_id.split('-');
+      const [baseCurrency, quoteCurrency] = f.product_id.split("-");
 
       // if quote currency is non-fiat (i.e. BTC) then we also need to update
       // the quote transaction
@@ -123,7 +152,7 @@ async function importFills(client) {
         quoteCurrency,
         amount,
         exchangeValue,
-        exchangeCurrency,
+        exchangeCurrency
       });
     }
   }
@@ -138,9 +167,7 @@ export const fetchGDAX = async config => {
     config.apiPassphrase
   );
 
-  console.log('\nImporting GDAX');
+  console.log("\nImporting GDAX");
 
-  // const fills = await importFills(client);
-  // fills.forEach(fill => console.log(fill));
   await importOrders(client);
 };

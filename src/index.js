@@ -1,16 +1,27 @@
-import { fetchCoinbase } from './sources/coinbase';
-import { fetchGDAX } from './sources/gdax';
+import program from "commander";
+import { resetDb, initDb } from "./models";
+import { importCoinbase } from "./sources/coinbase";
+import { uploadTransactions } from "./upload";
 
-import { Transaction } from './models/transaction';
+program.arguments("<cmd> [value]").action(async (cmd, value) => {
+  switch (cmd) {
+    case "resetDb":
+      await resetDb();
+      break;
+    case "initDb":
+      await initDb();
+      break;
+    case "uploadTransactions":
+      await uploadTransactions();
+      break;
+    case "import":
+      if (value === "coinbase") await importCoinbase();
+      break;
+    default:
+      console.log("Unknown command");
+  }
 
-if (process.env.COINBASE_TOKEN) {
-  fetchCoinbase();
-}
+  process.exit();
+});
 
-if (process.env.GDAX_API_KEY) {
-  fetchGDAX({
-    apiKey: process.env.GDAX_API_KEY,
-    apiSecret: process.env.GDAX_API_SECRET,
-    apiPassphrase: process.env.GDAX_API_PASSPHRASE,
-  });
-}
+program.parse(process.argv);

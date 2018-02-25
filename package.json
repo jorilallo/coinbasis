@@ -1,8 +1,7 @@
 {
   "name": "coinbasis",
   "version": "1.0.0",
-  "description":
-    "Collection of scripts to calculate cost basis and filter transactions",
+  "description": "Collection of scripts to calculate cost basis and filter transactions",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -15,6 +14,7 @@
     "@std/esm": "^0.17.3",
     "asset": "^0.4.13",
     "coinbase": "^2.0.6",
+    "commander": "^2.14.1",
     "dotenv": "^4.0.0",
     "gdax": "^0.4.2",
     "isomorphic-fetch": "^2.2.1",
