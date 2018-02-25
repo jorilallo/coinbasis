@@ -10,7 +10,7 @@ Workflow:
 1. Modify and audit them manually in SQL
 1. Upload transactions into Bitcoin.tax through API
 
-Right now only Coinbase is supported but adding more sources would not be hard.
+Right now only Coinbase is supported but adding more sources would not be hard. You'll also need a Postgres instance running locally.
 
 ## Installation and usage
 
@@ -18,17 +18,17 @@ Clone this repo and set following environment variable:
 
 * `DATABASE_URL` - Postgres database URL
 * `COINBASE_TOKEN` - Coinbase JWT token (TODO: change to API key)
-* `BITCOIN_TAXES_KEY` && `BITCOIN_TAXES_SECRET` - Bitcoin.tax API credentials
+* `BITCOIN_TAXES_KEY`/`BITCOIN_TAXES_SECRET` - Bitcoin.tax API credentials
 
 The script works with following commands:
 
-`yarn start iniDb` - Initialize DB
-`yarn start import coinbase` - Fetch Coinbase transaction into database
-`yarn start uploadTransactions` - Upload transactions into Bitcoin.tax
+* `yarn start iniDb` - Initialize DB
+* `yarn start import coinbase` - Fetch Coinbase transaction into database
+* `yarn start uploadTransactions` - Upload transactions into Bitcoin.tax
 
 Additional commands:
 
-`yarn start iniDb` - Reset DB data
+* `yarn start iniDb` - Reset DB data
 
 ## Instructions
 
